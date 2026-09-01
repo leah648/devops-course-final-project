@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-flask
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-flask
+  template:
+    metadata:
+      labels:
+        app: hello-flask
+    spec:
+      containers:
+      - name: hello-flask
+        image: your-dockerhub-username/hello-flask:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
+        env:
+        - name: PORT
+          value: "5000"
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 3
