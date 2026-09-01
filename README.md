@@ -51,15 +51,38 @@ Build and run with Docker
 
 Kubernetes
 
-Edit k8s/deployment.yaml to point image to your image repository (for example your-dockerhub-username/hello-flask:latest) then:
+Edit k8s/deployment.yaml to point image to your image repository (already set to `leahm90/devops-course-final-project:latest`) then:
 
   kubectl apply -f k8s/deployment.yaml
   kubectl apply -f k8s/service.yaml
 
 Jenkinsfile
 
-- Update environment.IMAGE and CREDENTIALS_ID to your Docker Hub repository and Jenkins credentials ID.
-- To enable automatic push set the pipeline environment variable DOCKERHUB_PUSH=true.
+- The pipeline default IMAGE is set to `leahm90/devops-course-final-project` and uses the Jenkins credentials id `dockerhub-creds`.
+- To enable automatic push set the pipeline environment variable DOCKERHUB_PUSH=true and ensure the Jenkins credential `dockerhub-creds` contains your Docker Hub username (leahm90) and password.
 - The pipeline builds the image, runs a smoke test against /health, and (when enabled) logs in and pushes the image.
+
+Pushing code to GitHub and the Docker image
+
+1) Push this repository to GitHub (recommended: use SSH or a personal access token):
+
+   # using HTTPS (you will be prompted for credentials or use a PAT)
+   git remote add origin https://github.com/leah648/devops-course-final-project.git
+   git branch -M main
+   git push -u origin main
+
+   # or using SSH (ensure your SSH key is added to GitHub)
+   git remote add origin git@github.com:leah648/devops-course-final-project.git
+   git branch -M main
+   git push -u origin main
+
+2) Build and push Docker image locally (or let Jenkins push it):
+
+   docker build -t leahm90/devops-course-final-project:latest .
+   docker login --username leahm90
+   # enter your Docker Hub password when prompted (do NOT store it in this repo)
+   docker push leahm90/devops-course-final-project:latest
+
+Security note: Do NOT commit passwords, tokens, or other credentials into the repository. Use Jenkins credentials store, GitHub Secrets, or your local Docker login.
 
 License: MIT

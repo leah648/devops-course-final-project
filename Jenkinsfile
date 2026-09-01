@@ -1,7 +1,7 @@
 pipeline {
   agent any
   environment {
-    IMAGE = "your-dockerhub-username/hello-flask"
+    IMAGE = "leahm90/devops-course-final-project"
     TAG = "${env.BUILD_NUMBER ?: 'latest'}"
     CREDENTIALS_ID = 'dockerhub-creds' // update this to your Jenkins credentials id
   }
