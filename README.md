@@ -1,88 +1,165 @@
-# Hello Flask (Hello World)
+# Hello World - CI/CD & GitOps Pipeline
 
-Simple Flask "Hello World" application packaged for Docker and Kubernetes.
+## Overview
 
-Repository layout:
-```
+This project demonstrates a complete CI/CD pipeline for building, containerizing, and deploying a simple Hello World web application to Kubernetes.
+
+The project uses Flask, Docker, Docker Hub, Kubernetes, and Jenkins.
+
+## Project Structure
+
+```text
 .
 ├── app/
-│   ├── app.py
-│   └── requirements.txt
-├── Dockerfile
-├── Jenkinsfile
+│   └── app.py
 ├── k8s/
 │   ├── deployment.yaml
 │   └── service.yaml
-├── README.md
-```
+├── Dockerfile
+├── Jenkinsfile
+└── README.md
+Application
 
-Features
-- Flask app with endpoints:
-  - / -> "Hello World"
-  - /health -> health check (200)
-  - /ready -> readiness check (200)
-- Dockerfile producing a small image (uses gunicorn)
-- Kubernetes manifests with liveness/readiness probes
-- Jenkinsfile pipeline to build, smoke-test and optionally push image
+The application is a simple Flask web application that displays:
 
-Run locally (without Docker)
+Hello World
+Prerequisites
 
-1. Create a virtual environment and install dependencies:
+The following tools are required:
 
-   python -m venv .venv
-   .venv\Scripts\activate   # Windows
-   pip install -r app\requirements.txt
+Python
+Docker Desktop
+Minikube
+kubectl
+Jenkins
+Git
+Run the Application Locally
 
-2. Run the app:
+Run:
 
-   python app\app.py
+python app/app.py
 
-The app will be available at http://localhost:5000 and will respond with "Hello World".
+The application will be available at:
 
-Build and run with Docker
+http://localhost:5000
+Docker
+Build the Docker Image
+docker build -t hello-world:v1 .
+Run the Container
+docker run -p 5000:5000 hello-world:v1
 
-1. Build the image:
+The application can then be accessed at:
 
-   docker build -t hello-flask:latest .
+http://localhost:5000
+Push the Image to Docker Hub
 
-2. Run the container:
+Tag the image:
 
-   docker run -p 5000:5000 hello-flask:latest
+docker tag hello-world:v1 leahm90/hello-world:v1
 
+Login to Docker Hub:
+
+docker login
+
+Push the image:
+
+docker push leahm90/hello-world:v1
 Kubernetes
 
-Edit k8s/deployment.yaml to point image to your image repository (already set to `leahm90/devops-course-final-project:latest`) then:
+The application is deployed to Kubernetes using a Deployment and a Service.
 
-  kubectl apply -f k8s/deployment.yaml
-  kubectl apply -f k8s/service.yaml
+The Deployment is configured with:
 
-Jenkinsfile
+2 replicas
+CPU and memory requests
+CPU and memory limits
 
-- The pipeline default IMAGE is set to `leahm90/devops-course-final-project` and uses the Jenkins credentials id `dockerhub-creds`.
-- To enable automatic push set the pipeline environment variable DOCKERHUB_PUSH=true and ensure the Jenkins credential `dockerhub-creds` contains your Docker Hub username (leahm90) and password.
-- The pipeline builds the image, runs a smoke test against /health, and (when enabled) logs in and pushes the image.
+The Service uses NodePort to expose the application.
 
-Pushing code to GitHub and the Docker image
+Start Minikube
+minikube start --driver=docker
+Deploy the Application
 
-1) Push this repository to GitHub (recommended: use SSH or a personal access token):
+Apply the Deployment:
 
-   # using HTTPS (you will be prompted for credentials or use a PAT)
-   git remote add origin https://github.com/leah648/devops-course-final-project.git
-   git branch -M main
-   git push -u origin main
+kubectl apply -f k8s/deployment.yaml
 
-   # or using SSH (ensure your SSH key is added to GitHub)
-   git remote add origin git@github.com:leah648/devops-course-final-project.git
-   git branch -M main
-   git push -u origin main
+Apply the Service:
 
-2) Build and push Docker image locally (or let Jenkins push it):
+kubectl apply -f k8s/service.yaml
+Verify the Deployment
 
-   docker build -t leahm90/devops-course-final-project:latest .
-   docker login --username leahm90
-   # enter your Docker Hub password when prompted (do NOT store it in this repo)
-   docker push leahm90/devops-course-final-project:latest
+Check the Deployment:
 
-Security note: Do NOT commit passwords, tokens, or other credentials into the repository. Use Jenkins credentials store, GitHub Secrets, or your local Docker login.
+kubectl get deployments
 
-License: MIT
+Check the Pods:
+
+kubectl get pods
+
+Check the Service:
+
+kubectl get services
+
+The application should have two running Pods.
+
+Access the Application
+
+Run:
+
+minikube service hello-world-service
+
+This opens the Hello World application through the Kubernetes Service.
+
+Jenkins CI/CD Pipeline
+
+The CI/CD pipeline is defined in the Jenkinsfile.
+
+The pipeline consists of the following stages:
+
+Build Application
+Build Docker Image
+Push Docker Image to Docker Hub
+Deploy to Kubernetes
+
+The goal is to automate the process from source code to a running Kubernetes deployment.
+
+GitOps
+
+The Kubernetes configuration is stored as code in the GitHub repository under the k8s/ directory.
+
+Changes to the Kubernetes configuration can therefore be version-controlled and tracked through Git.
+
+Troubleshooting
+Check Pod Status
+kubectl get pods
+Check Pod Logs
+kubectl logs <pod-name>
+Check Service
+kubectl get service hello-world-service
+Check Minikube Status
+minikube status
+Restart Minikube
+minikube stop
+minikube start --driver=docker
+Jenkins Pipeline Screenshot
+
+A screenshot of a successful Jenkins pipeline execution will be added here after the Jenkins pipeline is configured and executed successfully.
+
+Conclusion
+
+This project demonstrates a complete workflow for:
+
+GitHub
+   ↓
+Jenkins
+   ↓
+Build
+   ↓
+Docker Image
+   ↓
+Docker Hub
+   ↓
+Kubernetes
+   ↓
+Ru
