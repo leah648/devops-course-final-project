@@ -1,165 +1,189 @@
 # Hello World - CI/CD & GitOps Pipeline
 
-## Overview
+A simple Flask application deployed to Kubernetes through an automated Jenkins CI/CD pipeline.
 
-This project demonstrates a complete CI/CD pipeline for building, containerizing, and deploying a simple Hello World web application to Kubernetes.
+**Tech Stack:** Flask · Docker · Docker Hub · Jenkins · Kubernetes · GitHub
 
-The project uses Flask, Docker, Docker Hub, Kubernetes, and Jenkins.
+---
 
-## Project Structure
+## 📁 Project Structure
 
 ```text
 .
 ├── app/
-│   └── app.py
+│   ├── app.py
+│   └── requirements.txt
 ├── k8s/
 │   ├── deployment.yaml
 │   └── service.yaml
 ├── Dockerfile
 ├── Jenkinsfile
 └── README.md
-Application
+```
 
-The application is a simple Flask web application that displays:
+---
 
-Hello World
-Prerequisites
+## 🚀 Application
 
-The following tools are required:
+The application is built with Flask and provides:
 
-Python
-Docker Desktop
-Minikube
-kubectl
-Jenkins
-Git
-Run the Application Locally
+| Endpoint  | Description     |
+| --------- | --------------- |
+| `/`       | Hello World     |
+| `/health` | Health check    |
+| `/ready`  | Readiness check |
 
-Run:
+---
 
-python app/app.py
+## 🐳 Docker
 
-The application will be available at:
+### Build
 
-http://localhost:5000
-Docker
-Build the Docker Image
+```bash
 docker build -t hello-world:v1 .
-Run the Container
+```
+
+### Run
+
+```bash
 docker run -p 5000:5000 hello-world:v1
+```
 
-The application can then be accessed at:
+Open `http://localhost:5000` in your browser.
 
-http://localhost:5000
-Push the Image to Docker Hub
+### Push to Docker Hub
 
-Tag the image:
-
+```bash
 docker tag hello-world:v1 leahm90/hello-world:v1
-
-Login to Docker Hub:
-
 docker login
-
-Push the image:
-
 docker push leahm90/hello-world:v1
-Kubernetes
+```
 
-The application is deployed to Kubernetes using a Deployment and a Service.
+---
 
-The Deployment is configured with:
+## ☸️ Kubernetes
 
-2 replicas
-CPU and memory requests
-CPU and memory limits
+The application is deployed using a Kubernetes **Deployment** and **NodePort Service**.
 
-The Service uses NodePort to expose the application.
+### Deployment
 
-Start Minikube
+The Deployment includes:
+
+* **2 replicas**
+* CPU and memory **requests**
+* CPU and memory **limits**
+
+### Deploy
+
+```bash
 minikube start --driver=docker
-Deploy the Application
-
-Apply the Deployment:
 
 kubectl apply -f k8s/deployment.yaml
-
-Apply the Service:
-
 kubectl apply -f k8s/service.yaml
-Verify the Deployment
+```
 
-Check the Deployment:
+### Verify
 
+```bash
 kubectl get deployments
-
-Check the Pods:
-
 kubectl get pods
-
-Check the Service:
-
 kubectl get services
+```
 
-The application should have two running Pods.
+### Access the Application
 
-Access the Application
-
-Run:
-
+```bash
 minikube service hello-world-service
+```
 
-This opens the Hello World application through the Kubernetes Service.
+---
 
-Jenkins CI/CD Pipeline
+## 🔄 Jenkins CI/CD
 
-The CI/CD pipeline is defined in the Jenkinsfile.
+The CI/CD pipeline is defined in the `Jenkinsfile`.
 
-The pipeline consists of the following stages:
+```text
+GitHub
+   │
+   ▼
+Jenkins
+   │
+   ├── Build
+   ├── Smoke Test
+   ├── Build Docker Image
+   ├── Push to Docker Hub
+   └── Deploy to Kubernetes
+          │
+          ▼
+     Running Pods
+          │
+          ▼
+      Hello World
+```
 
-Build Application
-Build Docker Image
-Push Docker Image to Docker Hub
-Deploy to Kubernetes
+### Pipeline Stages
 
-The goal is to automate the process from source code to a running Kubernetes deployment.
+| Stage          | Action                               |
+| -------------- | ------------------------------------ |
+| **Build**      | Build the Docker image               |
+| **Smoke Test** | Verify application health            |
+| **Publish**    | Push the image to Docker Hub         |
+| **Deploy**     | Deploy the application to Kubernetes |
 
-GitOps
+### Jenkins Pipeline Screenshot
 
-The Kubernetes configuration is stored as code in the GitHub repository under the k8s/ directory.
+*Add a screenshot of a successful Jenkins pipeline here.*
 
-Changes to the Kubernetes configuration can therefore be version-controlled and tracked through Git.
+---
 
-Troubleshooting
-Check Pod Status
+## 🔧 Prerequisites
+
+* Python
+* Git
+* Docker Desktop
+* Minikube
+* kubectl
+* Jenkins
+
+---
+
+## 🛠️ Troubleshooting
+
+### Check Pod Status
+
+```bash
 kubectl get pods
-Check Pod Logs
+```
+
+### Check Pod Logs
+
+```bash
 kubectl logs <pod-name>
-Check Service
+```
+
+### Check Service
+
+```bash
 kubectl get service hello-world-service
-Check Minikube Status
+```
+
+### Check Minikube Status
+
+```bash
 minikube status
-Restart Minikube
+```
+
+### Restart Minikube
+
+```bash
 minikube stop
 minikube start --driver=docker
-Jenkins Pipeline Screenshot
+```
 
-A screenshot of a successful Jenkins pipeline execution will be added here after the Jenkins pipeline is configured and executed successfully.
+---
 
-Conclusion
+## 🎯 Project Goal
 
-This project demonstrates a complete workflow for:
+This project demonstrates an end-to-end DevOps workflow:
 
-GitHub
-   ↓
-Jenkins
-   ↓
-Build
-   ↓
-Docker Image
-   ↓
-Docker Hub
-   ↓
-Kubernetes
-   ↓
-Ru
+**Source Control → CI/CD → Containerization → Docker Registry → Kubernetes Deployment**
