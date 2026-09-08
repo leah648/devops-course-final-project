@@ -5,7 +5,9 @@ pipeline {
         IMAGE = "leahm90/hello-world"
         TAG = "v1"
         CREDENTIALS_ID = 'dockerhub-creds'
+        PATH = "C:\\Users\\user\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin;${env.PATH}"
     }
+
 
     stages {
 
