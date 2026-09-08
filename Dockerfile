@@ -10,12 +10,6 @@ RUN apt-get update && \
     apt-get install -y ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-# Add NetFree CA
-COPY netfree-ca.crt /usr/local/share/ca-certificates/netfree-ca.crt
-
-RUN update-ca-certificates && \
-    ls -l /etc/ssl/certs/ | grep -i netfree
-
 # Copy application
 COPY app/ /app/
 

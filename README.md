@@ -97,6 +97,11 @@ minikube service hello-world-service
 ```
 
 ---
+## Jenkins Screenshots
+
+### Successful Pipeline
+
+![Successful Jenkins Pipeline](screenshots/success_build.png)
 
 ## 🔄 Jenkins CI/CD
 
