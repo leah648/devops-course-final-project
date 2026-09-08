@@ -20,7 +20,9 @@ RUN update-ca-certificates && \
 COPY app/ /app/
 
 # Install dependencies
-RUN pip install --no-cache-dir -r /app/requirements.txt
+RUN pip install --trusted-host pypi.org \
+                --trusted-host files.pythonhosted.org \
+                --no-cache-dir -r /app/requirements.txt
 
 # Create non-root user
 RUN useradd --create-home --shell /bin/bash appuser || true
