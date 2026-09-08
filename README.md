@@ -2,7 +2,9 @@
 
 A simple Flask application deployed to Kubernetes through an automated Jenkins CI/CD pipeline.
 
-**Tech Stack:** Flask · Docker · Docker Hub · Jenkins · Kubernetes · GitHub
+## Tech Stack
+
+Flask · Docker · Docker Hub · Jenkins · Kubernetes · GitHub
 
 ---
 
@@ -16,6 +18,8 @@ A simple Flask application deployed to Kubernetes through an automated Jenkins C
 ├── k8s/
 │   ├── deployment.yaml
 │   └── service.yaml
+├── screenshots/
+│   └── success_build.png
 ├── Dockerfile
 ├── Jenkinsfile
 └── README.md
@@ -25,7 +29,7 @@ A simple Flask application deployed to Kubernetes through an automated Jenkins C
 
 ## 🚀 Application
 
-The application is built with Flask and provides:
+The application is built with Flask and provides the following endpoints:
 
 | Endpoint  | Description     |
 | --------- | --------------- |
@@ -40,21 +44,24 @@ The application is built with Flask and provides:
 ### Build
 
 ```bash
-docker build -t hello-world:v1 .
+docker build -t leahm90/hello-world:v1 .
 ```
 
 ### Run
 
 ```bash
-docker run -p 5000:5000 hello-world:v1
+docker run -p 5000:5000 leahm90/hello-world:v1
 ```
 
-Open `http://localhost:5000` in your browser.
+Open the application in your browser:
+
+```text
+http://localhost:5000
+```
 
 ### Push to Docker Hub
 
 ```bash
-docker tag hello-world:v1 leahm90/hello-world:v1
 docker login
 docker push leahm90/hello-world:v1
 ```
@@ -63,26 +70,32 @@ docker push leahm90/hello-world:v1
 
 ## ☸️ Kubernetes
 
-The application is deployed using a Kubernetes **Deployment** and **NodePort Service**.
+The application is deployed using a Kubernetes Deployment and a NodePort Service.
 
 ### Deployment
 
 The Deployment includes:
 
-* **2 replicas**
-* CPU and memory **requests**
-* CPU and memory **limits**
+* 2 replicas
+* CPU and memory requests
+* CPU and memory limits
 
 ### Deploy
 
+Start Minikube:
+
 ```bash
 minikube start --driver=docker
+```
 
+Apply the Kubernetes manifests:
+
+```bash
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
 ```
 
-### Verify
+### Verify Deployment
 
 ```bash
 kubectl get deployments
@@ -97,11 +110,6 @@ minikube service hello-world-service
 ```
 
 ---
-## Jenkins Screenshots
-
-### Successful Pipeline
-
-![Successful Jenkins Pipeline](screenshots/success_build.png)
 
 ## 🔄 Jenkins CI/CD
 
@@ -113,10 +121,9 @@ GitHub
    ▼
 Jenkins
    │
-   ├── Build
-   ├── Smoke Test
    ├── Build Docker Image
-   ├── Push to Docker Hub
+   ├── Smoke Test
+   ├── Publish to Docker Hub
    └── Deploy to Kubernetes
           │
           ▼
@@ -135,9 +142,9 @@ Jenkins
 | **Publish**    | Push the image to Docker Hub         |
 | **Deploy**     | Deploy the application to Kubernetes |
 
-### Jenkins Pipeline Screenshot
+### Successful Pipeline
 
-*Add a screenshot of a successful Jenkins pipeline here.*
+![Successful Jenkins Pipeline](screenshots/success_build.png)
 
 ---
 
@@ -145,10 +152,60 @@ Jenkins
 
 * Python
 * Git
+* GitHub account
 * Docker Desktop
 * Minikube
 * kubectl
 * Jenkins
+
+---
+
+## 🚀 Deployment Instructions
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/leah648/devops-course-final-project.git
+cd devops-course-final-project
+```
+
+### 2. Build the Docker Image
+
+```bash
+docker build -t leahm90/hello-world:v1 .
+```
+
+### 3. Run the Application Locally
+
+```bash
+docker run -p 5000:5000 leahm90/hello-world:v1
+```
+
+### 4. Start Kubernetes
+
+```bash
+minikube start --driver=docker
+```
+
+### 5. Deploy to Kubernetes
+
+```bash
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+```
+
+### 6. Verify the Deployment
+
+```bash
+kubectl get pods
+kubectl get services
+```
+
+### 7. Access the Application
+
+```bash
+minikube service hello-world-service
+```
 
 ---
 
