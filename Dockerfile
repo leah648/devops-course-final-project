@@ -5,13 +5,22 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-# Copy application code
+# Install CA certificates
+RUN apt-get update && \
+    apt-get install -y ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+# Add NetFree CA
+COPY netfree-ca.crt /usr/local/share/ca-certificates/netfree-ca.crt
+RUN update-ca-certificates
+
+# Copy application
 COPY app/ /app/
 
 # Install dependencies
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
-# Create a non-root user and switch to it (best-effort for slim images)
+# Create non-root user
 RUN useradd --create-home --shell /bin/bash appuser || true
 USER appuser
 
