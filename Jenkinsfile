@@ -24,7 +24,7 @@ pipeline {
 
                 bat '''
                     docker run -d --name hello-smoke -p 5000:5000 %IMAGE%:%TAG%
-                    timeout /t 5 /nobreak
+                    powershell -Command "Start-Sleep -Seconds 5"
                     curl -f http://localhost:5000/health
                     docker stop hello-smoke
                     docker rm hello-smoke
