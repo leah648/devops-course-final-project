@@ -107,14 +107,12 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                echo 'Deploying application to Kubernetes'
+                echo 'Deploying application to Kubernetes using Helm'
                 script {
                     if (isUnix()) {
-                        sh 'kubectl apply -f k8s/deployment.yaml'
-                        sh 'kubectl apply -f k8s/service.yaml'
+                        sh 'helm upgrade --install hello-world ./helm/hello-world'
                     } else {
-                        bat 'kubectl apply -f k8s/deployment.yaml'
-                        bat 'kubectl apply -f k8s/service.yaml'
+                        bat 'helm upgrade --install hello-world ./helm/hello-world'
                     }
                 }
             }
@@ -141,4 +139,3 @@ pipeline {
         }
     }
 }
-
