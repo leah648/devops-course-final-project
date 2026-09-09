@@ -110,9 +110,9 @@ pipeline {
                 echo 'Deploying application to Kubernetes using Helm'
                 script {
                     if (isUnix()) {
-                        sh 'helm upgrade --install hello-world ./helm/hello-world'
+                        sh 'helm upgrade --install hello-world ./helm/hello-world --server-side=false'
                     } else {
-                        bat 'helm upgrade --install hello-world ./helm/hello-world'
+                        bat 'helm upgrade --install hello-world ./helm/hello-world --server-side=false'
                     }
                 }
             }
