@@ -88,7 +88,7 @@ docker build -t leahm90/hello-world:v1 .
 docker run -p 5000:5000 leahm90/hello-world:v1
 ```
 
-Open the application:
+Open the application in your browser:
 
 ```text
 http://localhost:5000
@@ -144,17 +144,24 @@ The Kubernetes deployment is packaged as a Helm chart.
 
 Helm provides a reusable and configurable way to deploy the application to different environments.
 
+The Helm chart supports environment-specific configuration for:
+
+* Development
+* Staging
+* Production
+
 ### Helm Deployment
 
 ```bash
 helm upgrade --install hello-world ./helm/hello-world --server-side=false
 ```
 
-The same chart can be used with environment-specific values for:
+A successful deployment returns:
 
-* Development
-* Staging
-* Production
+```text
+STATUS: deployed
+DESCRIPTION: Upgrade complete
+```
 
 ---
 
@@ -199,9 +206,9 @@ Jenkins
 
 ### Successful Pipeline
 
-![Successful Jenkins Pipeline](screenshots/success_build.png)
+![Successful Jenkins Pipeline](screenshots/build_success.png)
 
-The Jenkins pipeline successfully completes the full CI/CD flow from source code to Kubernetes deployment.
+The Jenkins pipeline successfully completes the CI/CD flow and deploys the application using Helm.
 
 ---
 
@@ -244,7 +251,7 @@ Application
 
 The application uses **Argo Rollouts** for progressive delivery.
 
-Instead of immediately sending 100% of traffic to a new version, the new version is gradually introduced.
+Instead of immediately sending 100% of traffic to a new version, the new version is gradually introduced using a Canary strategy.
 
 ### Canary Strategy
 
@@ -259,15 +266,18 @@ New Version
     │
     ▼
  100%
+    │
+    ▼
+Stable Version
 ```
 
-The rollout was successfully verified at:
+The rollout was successfully verified through:
 
 * **20% Canary**
 * **50% Canary**
-* **100% Canary**
+* **100% Stable**
 
-This allows the new version to be validated gradually before becoming the stable version.
+![Canary Rollout 20-50-100](screenshots/Canary_20-50-100.png)
 
 ### Verify Rollout
 
@@ -276,7 +286,7 @@ kubectl get rollouts
 ```
 
 ```bash
-kubectl describe rollout hello-world-rollout
+kubectl describe rollout hello-world
 ```
 
 The rollout can be monitored for:
@@ -295,28 +305,38 @@ Phase: Healthy
 RolloutCompleted: True
 ```
 
+The final healthy state includes:
+
+```text
+Ready Replicas: 2
+Available Replicas: 2
+Stable RS: <stable-replicaset>
+```
+
 ---
 
 ## ↩️ Rollback
 
 Argo Rollouts also provides rollback capabilities.
 
-The project includes a verified rollback scenario in which the rollout was reverted to the stable application version.
+The project includes a verified rollback scenario in which the application was reverted to the stable `v1` version.
 
-After rollback, the rollout was verified to show:
+After rollback, the rollout was verified to return to a healthy state.
 
 ```text
 Image: leahm90/hello-world:v1
 Phase: Healthy
 RolloutCompleted: True
+Ready Replicas: 2
+Available Replicas: 2
 ```
 
-The ReplicaSet revision was also updated after the rollback.
+![Rollback - Healthy v1](screenshots/Rollback_Healthy_v1.png)
 
 ### Check Rollout History
 
 ```bash
-kubectl argo rollouts history rollout hello-world-rollout
+kubectl argo rollouts history rollout hello-world
 ```
 
 ### Verify ReplicaSets
@@ -328,7 +348,7 @@ kubectl get rs
 ### Describe the Rollout
 
 ```bash
-kubectl describe rollout hello-world-rollout
+kubectl describe rollout hello-world
 ```
 
 ---
@@ -364,7 +384,7 @@ kubectl get rollouts
 ### Detailed Rollout Information
 
 ```bash
-kubectl describe rollout hello-world-rollout
+kubectl describe rollout hello-world
 ```
 
 ---
@@ -385,6 +405,7 @@ The following tools are required for the complete project:
 * Argo CD
 * Argo Rollouts
 * Docker Hub account
+* Trivy
 
 ---
 
@@ -434,7 +455,7 @@ kubectl get rs
 
 ```bash
 kubectl get rollouts
-kubectl describe rollout hello-world-rollout
+kubectl describe rollout hello-world
 ```
 
 ### 8. Access the Application
@@ -480,7 +501,7 @@ kubectl get rollouts
 ### Check Detailed Rollout Information
 
 ```bash
-kubectl describe rollout hello-world-rollout
+kubectl describe rollout hello-world
 ```
 
 ### Check Minikube Status
@@ -555,7 +576,7 @@ The project demonstrates:
 * **App of Apps architecture**
 * **Progressive Canary delivery**
 * **Rollback and recovery**
-* **Kubernetes observability and verification**
+* **Kubernetes health and deployment verification**
 
 ---
 
@@ -567,18 +588,18 @@ The `screenshots/` directory contains evidence of the completed CI/CD and progre
 
 ![Successful Jenkins Pipeline](screenshots/build_success.png)
 
-### Canary Rollout
+### Canary Progressive Delivery
 
 The screenshot demonstrates the progressive rollout through:
 
-- 20% Canary
-- 50% Canary
-- 100% Stable
+* 20% Canary
+* 50% Canary
+* 100% Stable
 
 ![Canary Rollout 20-50-100](screenshots/Canary_20-50-100.png)
 
 ### Rollback
 
-The screenshot demonstrates a successful rollback to version `v1` with the rollout returning to a healthy state.
+The screenshot demonstrates a successful rollback to version `v1`, with the rollout returning to a healthy state.
 
 ![Rollback - Healthy v1](screenshots/Rollback_Healthy_v1.png)
