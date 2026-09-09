@@ -97,7 +97,7 @@ pipeline {
                             sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
                             sh 'docker push "$IMAGE:$TAG"'
                         } else {
-                            bat 'echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin'
+                            bat 'powershell -NoProfile -Command "$env:DOCKER_PASS | docker login -u $env:DOCKER_USER --password-stdin"'
                             bat 'docker push %IMAGE%:%TAG%'
                         }
                     }
