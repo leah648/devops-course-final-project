@@ -2,39 +2,76 @@ pipeline {
     agent any
 
     environment {
-        IMAGE = "leahm90/hello-world"
-        TAG = "v1"
+        IMAGE = 'leahm90/hello-world'
+        TAG = 'v1'
         CREDENTIALS_ID = 'dockerhub-creds'
     }
 
-
     stages {
+        stage('Clone') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh '''
+                            if [ -d .git ]; then
+                                echo "Repository already available in workspace"
+                            else
+                                git clone https://github.com/leah648/devops-course-final-project.git .
+                            fi
+                        '''
+                    } else {
+                        bat '''
+                            if exist .git (
+                                echo Repository already available in workspace
+                            ) else (
+                                git clone https://github.com/leah648/devops-course-final-project.git .
+                            )
+                        '''
+                    }
+                }
+            }
+        }
 
         stage('Build') {
             steps {
-                echo 'Building Docker image'
-                bat 'docker build -t %IMAGE%:%TAG% .'
+                script {
+                    if (isUnix()) {
+                        sh 'docker build -t "$IMAGE:$TAG" .'
+                    } else {
+                        bat 'docker build -t %IMAGE%:%TAG% .'
+                    }
+                }
             }
         }
 
         stage('Smoke Test') {
             steps {
                 echo 'Running smoke test'
-
-                bat '''
-                    docker run -d --name hello-smoke -p 5000:5000 %IMAGE%:%TAG%
-                    powershell -Command "Start-Sleep -Seconds 5"
-                    curl -f http://localhost:5000/health
-                    docker stop hello-smoke
-                    docker rm hello-smoke
-                '''
+                script {
+                    if (isUnix()) {
+                        sh '''
+                            docker run -d --name hello-smoke -p 5000:5000 "$IMAGE:$TAG"
+                            sleep 5
+                            curl -f http://localhost:5000/health
+                            docker stop hello-smoke
+                            docker rm hello-smoke
+                        '''
+                    } else {
+                        bat '''
+                            docker run -d --name hello-smoke -p 5000:5000 %IMAGE%:%TAG%
+                            powershell -Command "Start-Sleep -Seconds 5"
+                            curl -f http://localhost:5000/health
+                            docker stop hello-smoke
+                            docker rm hello-smoke
+                        '''
+                    }
+                }
             }
         }
 
         stage('Publish') {
             steps {
                 echo 'Pushing Docker image to Docker Hub'
-
                 withCredentials([
                     usernamePassword(
                         credentialsId: "${CREDENTIALS_ID}",
@@ -42,8 +79,15 @@ pipeline {
                         passwordVariable: 'DOCKER_PASS'
                     )
                 ]) {
-                    bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
-                    bat 'docker push %IMAGE%:%TAG%'
+                    script {
+                        if (isUnix()) {
+                            sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+                            sh 'docker push "$IMAGE:$TAG"'
+                        } else {
+                            bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
+                            bat 'docker push %IMAGE%:%TAG%'
+                        }
+                    }
                 }
             }
         }
@@ -51,16 +95,28 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 echo 'Deploying application to Kubernetes'
-
-                bat 'kubectl apply -f k8s/deployment.yaml'
-                bat 'kubectl apply -f k8s/service.yaml'
+                script {
+                    if (isUnix()) {
+                        sh 'kubectl apply -f k8s/deployment.yaml'
+                        sh 'kubectl apply -f k8s/service.yaml'
+                    } else {
+                        bat 'kubectl apply -f k8s/deployment.yaml'
+                        bat 'kubectl apply -f k8s/service.yaml'
+                    }
+                }
             }
         }
     }
 
     post {
         always {
-            bat 'docker image ls'
+            script {
+                if (isUnix()) {
+                    sh 'docker image ls'
+                } else {
+                    bat 'docker image ls'
+                }
+            }
         }
 
         success {

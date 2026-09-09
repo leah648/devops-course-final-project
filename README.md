@@ -153,10 +153,11 @@ Jenkins
 * Python
 * Git
 * GitHub account
-* Docker Desktop
-* Minikube
+* Docker Desktop or Docker Engine
+* Jenkins installed on a VM or container
+* k3s or an equivalent Kubernetes runtime
 * kubectl
-* Jenkins
+* Minikube (optional local test path)
 
 ---
 
