@@ -1,14 +1,13 @@
-FROM python:3.11-slim
+FROM python:3.11-alpine
 
 ENV PYTHONUNBUFFERED=1 \
     PORT=5000
 
 WORKDIR /app
 
-# Install CA certificates
-RUN apt-get update && \
-    apt-get install -y ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache ca-certificates bash && \
+    addgroup -S appuser && \
+    adduser -S -G appuser appuser
 
 # Copy application
 COPY app/ /app/
@@ -18,8 +17,6 @@ RUN pip install --trusted-host pypi.org \
                 --trusted-host files.pythonhosted.org \
                 --no-cache-dir -r /app/requirements.txt
 
-# Create non-root user
-RUN useradd --create-home --shell /bin/bash appuser || true
 USER appuser
 
 EXPOSE 5000
