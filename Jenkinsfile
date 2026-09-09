@@ -69,6 +69,19 @@ pipeline {
             }
         }
 
+        stage('Security Scan') {
+            steps {
+                echo 'Scanning Docker image for CRITICAL vulnerabilities'
+                script {
+                    if (isUnix()) {
+                        sh 'trivy image --severity CRITICAL --exit-code 1 "$IMAGE:$TAG"'
+                    } else {
+                        bat 'trivy image --severity CRITICAL --exit-code 1 %IMAGE%:%TAG%'
+                    }
+                }
+            }
+        }
+
         stage('Publish') {
             steps {
                 echo 'Pushing Docker image to Docker Hub'
@@ -84,7 +97,7 @@ pipeline {
                             sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
                             sh 'docker push "$IMAGE:$TAG"'
                         } else {
-                            bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
+                            bat 'echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin'
                             bat 'docker push %IMAGE%:%TAG%'
                         }
                     }
@@ -128,3 +141,4 @@ pipeline {
         }
     }
 }
+
