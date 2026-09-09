@@ -1,10 +1,24 @@
 # Hello World - CI/CD & GitOps Pipeline
 
-A simple Flask application deployed to Kubernetes through an automated Jenkins CI/CD pipeline.
+A simple Flask application deployed to Kubernetes through an automated Jenkins CI/CD pipeline and managed using GitOps with Argo CD.
 
-## Tech Stack
+The project demonstrates an end-to-end DevOps workflow including containerization, automated testing, security scanning, image publishing, Helm-based deployment, GitOps synchronization, progressive delivery with Argo Rollouts, and rollback.
 
-Flask · Docker · Docker Hub · Jenkins · Kubernetes · GitHub
+---
+
+## 🛠️ Tech Stack
+
+* **Application:** Python · Flask
+* **Containerization:** Docker
+* **Container Registry:** Docker Hub
+* **CI/CD:** Jenkins
+* **Orchestration:** Kubernetes
+* **Package Management:** Helm
+* **GitOps:** Argo CD
+* **Progressive Delivery:** Argo Rollouts
+* **Security Scanning:** Trivy
+* **Source Control:** GitHub
+* **Local Kubernetes:** Minikube
 
 ---
 
@@ -15,11 +29,32 @@ Flask · Docker · Docker Hub · Jenkins · Kubernetes · GitHub
 ├── app/
 │   ├── app.py
 │   └── requirements.txt
+│
 ├── k8s/
 │   ├── deployment.yaml
-│   └── service.yaml
+│   ├── service.yaml
+│   └── rollout.yaml
+│
+├── helm/
+│   └── hello-world/
+│       ├── Chart.yaml
+│       ├── values.yaml
+│       └── templates/
+│
+├── environments/
+│   ├── dev/
+│   ├── stage/
+│   └── prod/
+│
+├── argocd/
+│   ├── applications/
+│   └── app-of-apps.yaml
+│
 ├── screenshots/
-│   └── success_build.png
+│   ├── build_success.png
+│   ├── Canary_20-50-100.png
+│   └── Rollback_Healthy_v1.png
+│
 ├── Dockerfile
 ├── Jenkinsfile
 └── README.md
@@ -47,13 +82,13 @@ The application is built with Flask and provides the following endpoints:
 docker build -t leahm90/hello-world:v1 .
 ```
 
-### Run
+### Run Locally
 
 ```bash
 docker run -p 5000:5000 leahm90/hello-world:v1
 ```
 
-Open the application in your browser:
+Open the application:
 
 ```text
 http://localhost:5000
@@ -70,36 +105,28 @@ docker push leahm90/hello-world:v1
 
 ## ☸️ Kubernetes
 
-The application is deployed using a Kubernetes Deployment and a NodePort Service.
+The application runs on Kubernetes and is exposed through a Kubernetes Service.
 
-### Deployment
+The deployment configuration includes:
 
-The Deployment includes:
+* Multiple replicas
+* CPU requests and limits
+* Memory requests and limits
+* Health checks
+* Readiness checks
+* Kubernetes Service
 
-* 2 replicas
-* CPU and memory requests
-* CPU and memory limits
-
-### Deploy
-
-Start Minikube:
+### Start Minikube
 
 ```bash
 minikube start --driver=docker
 ```
 
-Apply the Kubernetes manifests:
+### Verify Kubernetes
 
 ```bash
-kubectl apply -f k8s/deployment.yaml
-kubectl apply -f k8s/service.yaml
-```
-
-### Verify Deployment
-
-```bash
-kubectl get deployments
 kubectl get pods
+kubectl get deployments
 kubectl get services
 ```
 
@@ -111,9 +138,31 @@ minikube service hello-world-service
 
 ---
 
+## 📦 Helm
+
+The Kubernetes deployment is packaged as a Helm chart.
+
+Helm provides a reusable and configurable way to deploy the application to different environments.
+
+### Helm Deployment
+
+```bash
+helm upgrade --install hello-world ./helm/hello-world --server-side=false
+```
+
+The same chart can be used with environment-specific values for:
+
+* Development
+* Staging
+* Production
+
+---
+
 ## 🔄 Jenkins CI/CD
 
 The CI/CD pipeline is defined in the `Jenkinsfile`.
+
+The pipeline automates the process from source code to Kubernetes deployment.
 
 ```text
 GitHub
@@ -121,43 +170,221 @@ GitHub
    ▼
 Jenkins
    │
+   ├── Clone Repository
+   │
    ├── Build Docker Image
+   │
    ├── Smoke Test
-   ├── Publish to Docker Hub
-   └── Deploy to Kubernetes
+   │
+   ├── Trivy Security Scan
+   │
+   ├── Push Image to Docker Hub
+   │
+   └── Helm Deploy
           │
           ▼
-     Running Pods
-          │
-          ▼
-      Hello World
+     Kubernetes
 ```
 
 ### Pipeline Stages
 
-| Stage          | Action                               |
-| -------------- | ------------------------------------ |
-| **Build**      | Build the Docker image               |
-| **Smoke Test** | Verify application health            |
-| **Publish**    | Push the image to Docker Hub         |
-| **Deploy**     | Deploy the application to Kubernetes |
+| Stage               | Action                                       |
+| ------------------- | -------------------------------------------- |
+| **Clone**           | Clone the source code from GitHub            |
+| **Docker Build**    | Build the application container              |
+| **Smoke Test**      | Verify that the application is healthy       |
+| **Trivy**           | Scan the container image for vulnerabilities |
+| **Docker Hub Push** | Publish the image to Docker Hub              |
+| **Helm Deploy**     | Deploy the application using Helm            |
 
 ### Successful Pipeline
 
 ![Successful Jenkins Pipeline](screenshots/success_build.png)
 
+The Jenkins pipeline successfully completes the full CI/CD flow from source code to Kubernetes deployment.
+
+---
+
+## 🐙 GitOps with Argo CD
+
+Argo CD is used to implement GitOps deployment.
+
+The desired Kubernetes state is stored in Git, and Argo CD continuously synchronizes the Kubernetes cluster with the configuration stored in the repository.
+
+The project uses an **App of Apps** structure:
+
+```text
+hello-world-parent
+        │
+        ├── hello-world-dev
+        ├── hello-world-stage
+        └── hello-world-prod
+```
+
+This allows multiple environments to be managed centrally while keeping their configuration separated.
+
+### GitOps Flow
+
+```text
+GitHub
+   │
+   ▼
+Argo CD
+   │
+   ▼
+Kubernetes
+   │
+   ▼
+Application
+```
+
+---
+
+## 🚦 Progressive Delivery with Argo Rollouts
+
+The application uses **Argo Rollouts** for progressive delivery.
+
+Instead of immediately sending 100% of traffic to a new version, the new version is gradually introduced.
+
+### Canary Strategy
+
+```text
+New Version
+    │
+    ▼
+  20%
+    │
+    ▼
+  50%
+    │
+    ▼
+ 100%
+```
+
+The rollout was successfully verified at:
+
+* **20% Canary**
+* **50% Canary**
+* **100% Canary**
+
+This allows the new version to be validated gradually before becoming the stable version.
+
+### Verify Rollout
+
+```bash
+kubectl get rollouts
+```
+
+```bash
+kubectl describe rollout hello-world-rollout
+```
+
+The rollout can be monitored for:
+
+* Current phase
+* Stable ReplicaSet
+* Rollout progress
+* Replica count
+* Image version
+* Rollout completion status
+
+A successful rollout reaches:
+
+```text
+Phase: Healthy
+RolloutCompleted: True
+```
+
+---
+
+## ↩️ Rollback
+
+Argo Rollouts also provides rollback capabilities.
+
+The project includes a verified rollback scenario in which the rollout was reverted to the stable application version.
+
+After rollback, the rollout was verified to show:
+
+```text
+Image: leahm90/hello-world:v1
+Phase: Healthy
+RolloutCompleted: True
+```
+
+The ReplicaSet revision was also updated after the rollback.
+
+### Check Rollout History
+
+```bash
+kubectl argo rollouts history rollout hello-world-rollout
+```
+
+### Verify ReplicaSets
+
+```bash
+kubectl get rs
+```
+
+### Describe the Rollout
+
+```bash
+kubectl describe rollout hello-world-rollout
+```
+
+---
+
+## 🧪 Verification
+
+Useful commands for verifying the deployment:
+
+### Pods
+
+```bash
+kubectl get pods
+```
+
+### ReplicaSets
+
+```bash
+kubectl get rs
+```
+
+### Services
+
+```bash
+kubectl get services
+```
+
+### Rollouts
+
+```bash
+kubectl get rollouts
+```
+
+### Detailed Rollout Information
+
+```bash
+kubectl describe rollout hello-world-rollout
+```
+
 ---
 
 ## 🔧 Prerequisites
 
+The following tools are required for the complete project:
+
 * Python
 * Git
 * GitHub account
-* Docker Desktop or Docker Engine
-* Jenkins installed on a VM or container
-* k3s or an equivalent Kubernetes runtime
+* Docker Desktop / Docker Engine
+* Jenkins
+* Kubernetes
 * kubectl
-* Minikube (optional local test path)
+* Minikube
+* Helm
+* Argo CD
+* Argo Rollouts
+* Docker Hub account
 
 ---
 
@@ -167,6 +394,7 @@ Jenkins
 
 ```bash
 git clone https://github.com/leah648/devops-course-final-project.git
+
 cd devops-course-final-project
 ```
 
@@ -188,21 +416,28 @@ docker run -p 5000:5000 leahm90/hello-world:v1
 minikube start --driver=docker
 ```
 
-### 5. Deploy to Kubernetes
+### 5. Deploy Using Helm
 
 ```bash
-kubectl apply -f k8s/deployment.yaml
-kubectl apply -f k8s/service.yaml
+helm upgrade --install hello-world ./helm/hello-world --server-side=false
 ```
 
-### 6. Verify the Deployment
+### 6. Verify Kubernetes Resources
 
 ```bash
 kubectl get pods
 kubectl get services
+kubectl get rs
 ```
 
-### 7. Access the Application
+### 7. Verify Argo Rollout
+
+```bash
+kubectl get rollouts
+kubectl describe rollout hello-world-rollout
+```
+
+### 8. Access the Application
 
 ```bash
 minikube service hello-world-service
@@ -230,6 +465,24 @@ kubectl logs <pod-name>
 kubectl get service hello-world-service
 ```
 
+### Check ReplicaSets
+
+```bash
+kubectl get rs
+```
+
+### Check Rollout Status
+
+```bash
+kubectl get rollouts
+```
+
+### Check Detailed Rollout Information
+
+```bash
+kubectl describe rollout hello-world-rollout
+```
+
 ### Check Minikube Status
 
 ```bash
@@ -247,6 +500,85 @@ minikube start --driver=docker
 
 ## 🎯 Project Goal
 
-This project demonstrates an end-to-end DevOps workflow:
+This project demonstrates a complete modern DevOps and GitOps workflow:
 
-**Source Control → CI/CD → Containerization → Docker Registry → Kubernetes Deployment**
+```text
+Source Control
+      │
+      ▼
+   Jenkins
+      │
+      ▼
+Docker Build
+      │
+      ▼
+ Smoke Test
+      │
+      ▼
+ Trivy Scan
+      │
+      ▼
+Docker Hub
+      │
+      ▼
+    Helm
+      │
+      ▼
+ Kubernetes
+      │
+      ▼
+  Argo CD
+      │
+      ▼
+Argo Rollouts
+      │
+      ├── 20%
+      ├── 50%
+      └── 100%
+            │
+            ▼
+       Stable Version
+            │
+            ▼
+         Rollback
+```
+
+The project demonstrates:
+
+* **CI/CD automation**
+* **Containerization**
+* **Automated smoke testing**
+* **Container security scanning**
+* **Docker image publishing**
+* **Helm-based Kubernetes deployment**
+* **GitOps with Argo CD**
+* **App of Apps architecture**
+* **Progressive Canary delivery**
+* **Rollback and recovery**
+* **Kubernetes observability and verification**
+
+---
+
+## 📸 Project Screenshots
+
+The `screenshots/` directory contains evidence of the completed CI/CD and progressive delivery workflow.
+
+### Successful Jenkins Pipeline
+
+![Successful Jenkins Pipeline](screenshots/build_success.png)
+
+### Canary Rollout
+
+The screenshot demonstrates the progressive rollout through:
+
+- 20% Canary
+- 50% Canary
+- 100% Stable
+
+![Canary Rollout 20-50-100](screenshots/Canary_20-50-100.png)
+
+### Rollback
+
+The screenshot demonstrates a successful rollback to version `v1` with the rollout returning to a healthy state.
+
+![Rollback - Healthy v1](screenshots/Rollback_Healthy_v1.png)
