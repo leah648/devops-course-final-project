@@ -1,27 +1,47 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
-  name: hello-world
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Chart.Name }}
 spec:
   replicas: {{ .Values.replicaCount }}
+
   selector:
     matchLabels:
-      app: hello-world
+      app: {{ .Chart.Name }}
+
   template:
     metadata:
       labels:
-        app: hello-world
+        app: {{ .Chart.Name }}
     spec:
       containers:
-        - name: hello-world
+        - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+
           ports:
             - containerPort: {{ .Values.service.targetPort }}
+
           resources:
             requests:
-              cpu: {{ .Values.resources.requests.cpu }}
-              memory: {{ .Values.resources.requests.memory }}
+              cpu: {{ .Values.resources.requests.cpu | default "100m" }}
+              memory: {{ .Values.resources.requests.memory | default "128Mi" }}
             limits:
               cpu: {{ .Values.resources.limits.cpu }}
               memory: {{ .Values.resources.limits.memory }}
+
+  strategy:
+    canary:
+      stableService: {{ .Release.Name }}-stable
+      canaryService: {{ .Release.Name }}-canary
+
+      steps:
+        - setWeight: 20
+        - pause:
+            duration: 30s
+        - setWeight: 50
+        - pause:
+            duration: 30s
+        - setWeight: 100

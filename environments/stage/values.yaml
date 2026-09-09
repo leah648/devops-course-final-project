@@ -1,0 +1,10 @@
+replicaCount: 2
+image:
+  repository: leahm90/hello-world
+  tag: v1-stage
+resources:
+  limits:
+    cpu: 350m
+    memory: 192Mi
+service:
+  nodePort: 30084
