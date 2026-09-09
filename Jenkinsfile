@@ -4,7 +4,7 @@ pipeline {
     environment {
         IMAGE = 'leahm90/hello-world'
         TAG = 'v1'
-        CREDENTIALS_ID = 'dockerhub-creds'
+        CREDENTIALS_ID = 'dockerhub-creds-v1'
     }
 
     stages {
