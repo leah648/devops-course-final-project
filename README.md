@@ -26,6 +26,7 @@ The project demonstrates an end-to-end DevOps workflow including containerizatio
 
 ```text
 .
+
 ├── app/
 │   ├── app.py
 │   └── requirements.txt
@@ -52,6 +53,7 @@ The project demonstrates an end-to-end DevOps workflow including containerizatio
 │
 ├── screenshots/
 │   ├── build_success.png
+│   ├── argocd_apps_healthy.png
 │   ├── Canary_20-50-100.png
 │   └── Rollback_Healthy_v1.png
 │
@@ -160,6 +162,7 @@ A successful deployment returns:
 
 ```text
 STATUS: deployed
+
 DESCRIPTION: Upgrade complete
 ```
 
@@ -221,7 +224,7 @@ The desired Kubernetes state is stored in Git, and Argo CD continuously synchron
 The project uses an **App of Apps** structure:
 
 ```text
-hello-world-parent
+hello-world-app-of-apps
         │
         ├── hello-world-dev
         ├── hello-world-stage
@@ -245,6 +248,12 @@ Kubernetes
 Application
 ```
 
+### Argo CD Web UI
+
+The Argo CD Web UI provides a visual overview of the GitOps applications and their synchronization and health status.
+
+![Argo CD Applications - Healthy and Synced](screenshots/argocd_apps_healthy.png)
+
 ---
 
 ## 🚦 Progressive Delivery with Argo Rollouts
@@ -257,17 +266,29 @@ Instead of immediately sending 100% of traffic to a new version, the new version
 
 ```text
 New Version
+
     │
+
     ▼
+
   20%
+
     │
+
     ▼
+
   50%
+
     │
+
     ▼
+
  100%
+
     │
+
     ▼
+
 Stable Version
 ```
 
@@ -302,6 +323,7 @@ A successful rollout reaches:
 
 ```text
 Phase: Healthy
+
 RolloutCompleted: True
 ```
 
@@ -325,9 +347,13 @@ After rollback, the rollout was verified to return to a healthy state.
 
 ```text
 Image: leahm90/hello-world:v1
+
 Phase: Healthy
+
 RolloutCompleted: True
+
 Ready Replicas: 2
+
 Available Replicas: 2
 ```
 
@@ -587,6 +613,12 @@ The `screenshots/` directory contains evidence of the completed CI/CD and progre
 ### Successful Jenkins Pipeline
 
 ![Successful Jenkins Pipeline](screenshots/build_success.png)
+
+### Argo CD Web UI
+
+The Argo CD Web UI provides a visual overview of the applications managed through the App of Apps structure.
+
+![Argo CD Applications - Healthy and Synced](screenshots/argocd_apps_healthy.png)
 
 ### Canary Progressive Delivery
 
